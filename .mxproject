@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=E:/Workspaces/James/Firmware_46_SW4STM/Gen9_BPS_46/Inc
+HeaderPath=E:/Workspaces/James/Firmware_46_SW4STM/Gen9_BPS/Inc
 HeaderFiles=FreeRTOSConfig.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;
-SourcePath=E:/Workspaces/James/Firmware_46_SW4STM/Gen9_BPS_46/Src
+SourcePath=E:/Workspaces/James/Firmware_46_SW4STM/Gen9_BPS/Src
 SourceFiles=FreeRTOSConfig.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;freertos.c;stm32f4xx_it.c;stm32f4xx_hal_msp.c;stm32f4xx_hal_timebase_TIM.c;main.c;
 
 [PreviousLibFiles]
