@@ -4,37 +4,37 @@
   * Description        : Main program body
   ******************************************************************************
   *
-  * Copyright (c) 2017 STMicroelectronics International N.V. 
+  * Copyright (c) 2017 STMicroelectronics International N.V.
   * All rights reserved.
   *
-  * Redistribution and use in source and binary forms, with or without 
+  * Redistribution and use in source and binary forms, with or without
   * modification, are permitted, provided that the following conditions are met:
   *
-  * 1. Redistribution of source code must retain the above copyright notice, 
+  * 1. Redistribution of source code must retain the above copyright notice,
   *    this list of conditions and the following disclaimer.
   * 2. Redistributions in binary form must reproduce the above copyright notice,
   *    this list of conditions and the following disclaimer in the documentation
   *    and/or other materials provided with the distribution.
-  * 3. Neither the name of STMicroelectronics nor the names of other 
-  *    contributors to this software may be used to endorse or promote products 
+  * 3. Neither the name of STMicroelectronics nor the names of other
+  *    contributors to this software may be used to endorse or promote products
   *    derived from this software without specific written permission.
-  * 4. This software, including modifications and/or derivative works of this 
+  * 4. This software, including modifications and/or derivative works of this
   *    software, must execute solely and exclusively on microcontroller or
   *    microprocessor devices manufactured by or for STMicroelectronics.
-  * 5. Redistribution and use of this software other than as permitted under 
-  *    this license is void and will automatically terminate your rights under 
-  *    this license. 
+  * 5. Redistribution and use of this software other than as permitted under
+  *    this license is void and will automatically terminate your rights under
+  *    this license.
   *
-  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
-  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
-  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS"
+  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT
+  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
   * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
-  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
+  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT
   * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
   * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
-  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
   * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
   * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
@@ -375,11 +375,11 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
- 
+
 
   /* Start scheduler */
   osKernelStart();
-  
+
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
@@ -403,13 +403,13 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-    /**Configure the main internal regulator output voltage 
+    /**Configure the main internal regulator output voltage
     */
   __HAL_RCC_PWR_CLK_ENABLE();
 
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-    /**Initializes the CPU, AHB and APB busses clocks 
+    /**Initializes the CPU, AHB and APB busses clocks
     */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
@@ -425,7 +425,7 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-    /**Initializes the CPU, AHB and APB busses clocks 
+    /**Initializes the CPU, AHB and APB busses clocks
     */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -439,11 +439,11 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-    /**Configure the Systick interrupt time 
+    /**Configure the Systick interrupt time
     */
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-    /**Configure the Systick 
+    /**Configure the Systick
     */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
@@ -457,7 +457,7 @@ static void MX_ADC1_Init(void)
 
   ADC_ChannelConfTypeDef sConfig;
 
-    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
     */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
@@ -476,7 +476,7 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
 
-    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
     */
   sConfig.Channel = ADC_CHANNEL_6;
   sConfig.Rank = 1;
@@ -486,7 +486,7 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
 
-    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
     */
   sConfig.Channel = ADC_CHANNEL_14;
   sConfig.Rank = 2;
@@ -495,7 +495,7 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
 
-    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
     */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = 3;
@@ -610,10 +610,10 @@ static void MX_WWDG_Init(void)
 
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-static void MX_DMA_Init(void) 
+static void MX_DMA_Init(void)
 {
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
@@ -644,9 +644,9 @@ static void MX_DMA_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -671,7 +671,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, LD2_Pin|EN2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, FAN_Pin|EN1_Pin|S2_Pin|S1_Pin 
+  HAL_GPIO_WritePin(GPIOB, FAN_Pin|EN1_Pin|S2_Pin|S1_Pin
                           |S3_Pin|S0_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -697,9 +697,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : FAN_Pin S2_Pin S1_Pin S3_Pin 
+  /*Configure GPIO pins : FAN_Pin S2_Pin S1_Pin S3_Pin
                            S0_Pin */
-  GPIO_InitStruct.Pin = FAN_Pin|S2_Pin|S1_Pin|S3_Pin 
+  GPIO_InitStruct.Pin = FAN_Pin|S2_Pin|S1_Pin|S3_Pin
                           |S0_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -770,31 +770,25 @@ void doApplication(void const * argument)
 {
 
   /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-//	  while(Serial2_available()){
-//		  Serial2_write(Serial2_read());
-//	  }
-	  osDelay(10000);
-  }
-  /* USER CODE END 5 */ 
+	for(;;){
+		osDelay(10000);
+	}
+  /* USER CODE END 5 */
 }
 
 /* doProcessCan function */
 void doProcessCan(void const * argument)
 {
   /* USER CODE BEGIN doProcessCan */
-  /* Infinite loop */
 	for(;;){
-			// Wrapper function for the CAN Processing Logic
-			// Handles all CAN Protocol Suite based responses and tasks
+		// Wrapper function for the CAN Processing Logic
+		// Handles all CAN Protocol Suite based responses and tasks
 #ifndef DISABLE_CAN
-			Can_Processor();
+		Can_Processor();
 #else
-			osDelay(10000);
+		osDelay(10000);
 #endif
-		}
+	}
   /* USER CODE END doProcessCan */
 }
 
@@ -816,67 +810,70 @@ void doRT(void const * argument)
 	static uint8_t intBuf[10];
 #endif
 	static uint32_t previousWaitTime;
-//	osDelay(50);
 
-  /* Infinite loop */
-  for(;;)
-  {
+	for(;;){
 #ifndef DISABLE_CAN
-	  if((selfStatusWord & 0x07) == ACTIVE){
+		if((selfStatusWord & 0x07) == ACTIVE){
 #endif
-	  	previousWaitTime = osKernelSysTick();
-		mcp3909_wakeup(&hmcp1);
-		xSemaphoreTake(mcp3909_DRHandle, portMAX_DELAY);
-		xSemaphoreTake(mcp3909_RXHandle, portMAX_DELAY);
-		mcp3909_parseChannelData(&hmcp1);
+			previousWaitTime = osKernelSysTick();
+			mcp3909_wakeup(&hmcp1);
+			xSemaphoreTake(mcp3909_DRHandle, portMAX_DELAY);
+			xSemaphoreTake(mcp3909_RXHandle, portMAX_DELAY);
+			mcp3909_parseChannelData(&hmcp1);
 
-		#ifndef DISABLE_CAN
-		int32_t temp;
+			while(!mcp3909_verify(&hmcp1)){
+				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
+				EM_Init();
+				osDelay(100);
+			}
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
 
-		newFrame.id = battPwr;
-		temp = psb1ch0Map((hmcp1.registers[0]));
-		if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x200, temp);
-		*(int32_t*)(&(newFrame.Data[0])) = __REV(temp);
-		temp= psb1ch1Map((hmcp1.registers[1]));
-		if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x201, temp);
-		*(int32_t*)(&(newFrame.Data[4])) = __REV(temp);
-		bxCan_sendFrame(&newFrame);
-
-		// newFrame.id = motorPwr;
-		// temp = psb1ch0Map(__REV(hmcp1.registers[2]));
-		// if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x202, temp);
-		// *(int32_t*)(&(newFrame.Data[0])) = temp;
-		// temp= psb1ch1Map(__REV(hmcp1.registers[3]));
-		// if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x203, temp);
-		// *(int32_t*)(&(newFrame.Data[4])) = temp;
-		// bxCan_sendFrame(&newFrame);
-		
-		// newFrame.id = lpBusPwr;
-		// temp = psb1ch0Map(__REV(hmcp1.registers[4]));
-		// if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x204, temp);
-		// *(int32_t*)(&(newFrame.Data[0])) = temp;
-		// temp= psb1ch1Map(__REV(hmcp1.registers[5]));
-		// if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x205, temp);
-		// *(int32_t*)(&(newFrame.Data[4])) = temp;
-		// bxCan_sendFrame(&newFrame);
-		#endif
-
-		// XXX: Energy metering algorithm
-
-		mcp3909_sleep(&hmcp1);
-		HAL_WWDG_Refresh(&hwwdg);
-		osDelayUntil(&previousWaitTime, RT_Interval);
-//		osDelay(RT_Interval);
 #ifndef DISABLE_CAN
-	  }else{
-		  osDelay(1);
-	  }
+			int32_t temp;
+
+			newFrame.id = battPwr;
+			temp = psb1ch0Map((hmcp1.registers[0]));
+			if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x200, temp);
+			*(int32_t*)(&(newFrame.Data[0])) = __REV(temp);
+			temp= psb1ch1Map((hmcp1.registers[1]));
+			if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x201, temp);
+			*(int32_t*)(&(newFrame.Data[4])) = __REV(temp);
+			bxCan_sendFrame(&newFrame);
+
+			// newFrame.id = motorPwr;
+			// temp = psb1ch0Map(__REV(hmcp1.registers[2]));
+			// if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x202, temp);
+			// *(int32_t*)(&(newFrame.Data[0])) = temp;
+			// temp= psb1ch1Map(__REV(hmcp1.registers[3]));
+			// if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x203, temp);
+			// *(int32_t*)(&(newFrame.Data[4])) = temp;
+			// bxCan_sendFrame(&newFrame);
+
+			// newFrame.id = lpBusPwr;
+			// temp = psb1ch0Map(__REV(hmcp1.registers[4]));
+			// if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x204, temp);
+			// *(int32_t*)(&(newFrame.Data[0])) = temp;
+			// temp= psb1ch1Map(__REV(hmcp1.registers[5]));
+			// if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x205, temp);
+			// *(int32_t*)(&(newFrame.Data[4])) = temp;
+			// bxCan_sendFrame(&newFrame);
 #endif
-  }
+
+			// XXX: Energy metering algorithm
+
+			mcp3909_sleep(&hmcp1);
+			HAL_WWDG_Refresh(&hwwdg);
+			osDelayUntil(&previousWaitTime, RT_Interval);
+#ifndef DISABLE_CAN
+		}else{
+			osDelay(1);
+		}
+#endif
+	}
 #else
-  for(;;){
-	  osDelay(1000);
-  }
+	for(;;){
+		osDelay(1000);
+	}
 #endif
   /* USER CODE END doRT */
 }
@@ -896,155 +893,153 @@ void doSMT(void const * argument)
 	osDelay(10);
 #endif
 
-  /* Infinite loop */
-  for(;;)
-  {
+	for(;;){
 #ifndef DISABLE_CAN
-	  if((selfStatusWord & 0x07) == ACTIVE){
+		if((selfStatusWord & 0x07) == ACTIVE){
 #endif
-		  ltc68041_clearCell(&hbms1);
-		  osDelay(3);
-		  ltc68041_startCVConv(&hbms1);
-
-		  // Delay enough time but also make sure that the chip doesn't go into sleep mode
-		for(uint8_t i = 0; i < 9 * LTC_TOTAL_IC; i++){
-			osDelay(1);
-			wakeup_sleep();
-		}
-
-		// Read the register groups
-		ltc68041_readRegGroup(&hbms1, RDCVA);
-		osDelay(2);
-		ltc68041_parseCV(&hbms1, A);
-
-		ltc68041_readRegGroup(&hbms1, RDCVB);
-		osDelay(2);
-		ltc68041_parseCV(&hbms1, B);
-
-		ltc68041_readRegGroup(&hbms1, RDCVC);
-		osDelay(2);
-		ltc68041_parseCV(&hbms1, C);
-
-		ltc68041_readRegGroup(&hbms1, RDCVD);
-		osDelay(2);
-		ltc68041_parseCV(&hbms1, D);
-
-//		success = ltc68041_readRegGroup(&hbms1, RDSTATB);
-//		osDelay(2);
-//		ltc68041_parseSTAT(&hbms1, B);
-
-#define vovTo100uV(x) ((x+1)*16)
-
-		for(uint8_t i=0; i<LTC_TOTAL_IC; i++){
-          // TODO BUG INFO: Change following number per board
-			for(uint8_t j=0; j<12; j+=4){
-#ifndef DISABLE_CAN
-				newFrame.id = voltOffset+i*3+j/4;
-				newFrame.Data[0] = hbms1.board[i].CVR[j+0] >> 8;
-				newFrame.Data[1] = hbms1.board[i].CVR[j+0] & 0xff;
-				newFrame.Data[2] = hbms1.board[i].CVR[j+1] >> 8;
-				newFrame.Data[3] = hbms1.board[i].CVR[j+1] & 0xff;
-				newFrame.Data[4] = hbms1.board[i].CVR[j+2] >> 8;
-				newFrame.Data[5] = hbms1.board[i].CVR[j+2] & 0xff;
-				newFrame.Data[6] = hbms1.board[i].CVR[j+3] >> 8;
-				newFrame.Data[7] = hbms1.board[i].CVR[j+3] & 0xff;
-				bxCan_sendFrame(&newFrame);
-//				if(bxCan_sendFrame(&newFrame) != 0){
-//					Serial2_writeBuf("oh no!\n);
-//				}
-#endif
-#ifndef DISABLE_SERIAL_OUT
-				static uint8_t msg[3];
-				msg[0] = hbms1.board[i].CVR[j+0] >> 8;
-				msg[1] = hbms1.board[i].CVR[j+0] & 0xff;
-				Serial2_writeBuf(msg);
-#endif
-				for(uint8_t k=0; k<4; k++){
-                  if(LTC_CELL_EN[i] & (1<<(j+k))){
-					if(hbms1.board[i].CVR[j+k] > vovTo100uV(VOV) || hbms1.board[i].CVR[j+k] < vovTo100uV(VUV)){
-#ifndef DISABLE_SERIAL_OUT
-						Serial2_writeBuf(ohno);
-#endif
-						assert_bps_fault(i*3+j/4, hbms1.board[i].CVR[j+k]);
-					}
-                  }
+			if(ltc68041_statTest(&bms1)){
+				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
+				osDelay(100);
+				while(ltc68041_Initialize(&hbms1) != 0){
+					osDelay(100);
 				}
 			}
-		}
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
 
-		//Check OV UV flags
-//		for(int i=0; i<3; i++){
-//			if(hbms1.board[i].STATR[5] || (hbms1.board[i].STATR[6] & 0xff)){
-//				assert_bps_fault(i,0);
-//			}
-//		}
+			ltc68041_clearCell(&hbms1);
+			osDelay(3);
+			ltc68041_startCVConv(&hbms1);
 
-		osDelay(SMT_Interval - (8+LTC_TOTAL_IC*4));
+			// Delay enough time but also make sure that the chip doesn't go into sleep mode
+			for(uint8_t i = 0; i < 9 * LTC_TOTAL_IC; i++){
+				osDelay(1);
+				wakeup_sleep();
+			}
+
+			// Read the register groups
+			ltc68041_readRegGroup(&hbms1, RDCVA);
+			osDelay(2);
+			ltc68041_parseCV(&hbms1, A);
+
+			ltc68041_readRegGroup(&hbms1, RDCVB);
+			osDelay(2);
+			ltc68041_parseCV(&hbms1, B);
+
+			ltc68041_readRegGroup(&hbms1, RDCVC);
+			osDelay(2);
+			ltc68041_parseCV(&hbms1, C);
+
+			ltc68041_readRegGroup(&hbms1, RDCVD);
+			osDelay(2);
+			ltc68041_parseCV(&hbms1, D);
+
+			// success = ltc68041_readRegGroup(&hbms1, RDSTATB);
+			// osDelay(2);
+			// ltc68041_parseSTAT(&hbms1, B);
+
+			#define vovTo100uV(x) ((x+1)*16)
+
+			for(uint8_t i=0; i<LTC_TOTAL_IC; i++){
+				for(uint8_t j=0; j<12; j+=4){
 #ifndef DISABLE_CAN
-	  }else{
-		  osDelay(1);
-	  }
+					newFrame.id = voltOffset+i*3+j/4;
+					newFrame.Data[0] = hbms1.board[i].CVR[j+0] >> 8;
+					newFrame.Data[1] = hbms1.board[i].CVR[j+0] & 0xff;
+					newFrame.Data[2] = hbms1.board[i].CVR[j+1] >> 8;
+					newFrame.Data[3] = hbms1.board[i].CVR[j+1] & 0xff;
+					newFrame.Data[4] = hbms1.board[i].CVR[j+2] >> 8;
+					newFrame.Data[5] = hbms1.board[i].CVR[j+2] & 0xff;
+					newFrame.Data[6] = hbms1.board[i].CVR[j+3] >> 8;
+					newFrame.Data[7] = hbms1.board[i].CVR[j+3] & 0xff;
+					bxCan_sendFrame(&newFrame);
 #endif
-  }
+#ifndef DISABLE_SERIAL_OUT
+					static uint8_t msg[3];
+					msg[0] = hbms1.board[i].CVR[j+0] >> 8;
+					msg[1] = hbms1.board[i].CVR[j+0] & 0xff;
+					Serial2_writeBuf(msg);
+#endif
+					for(uint8_t k=0; k<4; k++){
+						if(LTC_CELL_EN[i] & (1<<(j+k))){
+							if(hbms1.board[i].CVR[j+k] > vovTo100uV(VOV) || hbms1.board[i].CVR[j+k] < vovTo100uV(VUV)){
+#ifndef DISABLE_SERIAL_OUT
+								Serial2_writeBuf(ohno);
+#endif
+								assert_bps_fault(i*3+j/4, hbms1.board[i].CVR[j+k]);
+							}
+						}
+					}
+				}
+			}
+
+			//Check OV UV flags
+			// for(int i=0; i<3; i++){
+			// 	if(hbms1.board[i].STATR[5] || (hbms1.board[i].STATR[6] & 0xff)){
+			// 		assert_bps_fault(i,0);
+			// 	}
+			// }
+
+			osDelay(SMT_Interval - (8+LTC_TOTAL_IC*4));
+#ifndef DISABLE_CAN
+		}else{
+			osDelay(1);
+		}
+#endif
+	}
 #else
-  for(;;){
-	  osDelay(1000);
-  }
+	for(;;){
+		osDelay(1000);
+	}
 #endif
-  /* USER CODE END doSMT */
+	/* USER CODE END doSMT */
 }
 
 /* doTMT function */
 void doTMT(void const * argument)
 {
   /* USER CODE BEGIN doTMT */
-  #ifndef DISABLE_TMT
+#ifndef DISABLE_TMT
 
-  #ifndef DISABLE_CAN
-  	static Can_frame_t newFrame;
-  	newFrame.dlc = 8;
-  	newFrame.isRemote = 0;
-  	newFrame.isExt = 0;
-  #else
-  	osDelay(10);
-  #endif
+#ifndef DISABLE_CAN
+	static Can_frame_t newFrame;
+	newFrame.dlc = 8;
+	newFrame.isRemote = 0;
+	newFrame.isExt = 0;
+#else
+	osDelay(10);
+#endif
+	for(;;){
+#ifndef DISABLE_CAN
+		if((selfStatusWord & 0x07) == ACTIVE){
+#endif
+			int32_t microCelcius;
+			for(int i=0; 2*i<TEMP_CHANNELS; i++){
+				for(int j=0; j<2; j++){
+					microCelcius = getMicroCelcius(2*i+j);
+					resetReading(2*i+j);
 
-    /* Infinite loop */
-    for(;;)
-    {
-  #ifndef DISABLE_CAN
-  	  if((selfStatusWord & 0x07) == ACTIVE){
-  #endif
-          int32_t microCelcius;
-  		  for(int i=0; 2*i<TEMP_CHANNELS; i++){
-  			  for(int j=0; j<2; j++){
-				  microCelcius = getMicroCelcius(2*i+j);
-  				  resetReading(2*i+j);
-
-  				  if(microCelcius >= OVER_TEMPERATURE || microCelcius <= UNDER_TEMPERATURE)
-  					  assert_bps_fault(tempOffset+i*2+j, microCelcius);
-  #ifndef DISABLE_CAN
-  				  *(int32_t*)(&(newFrame.Data[j*4])) = __REV(microCelcius);
-  #endif
-  			  }
-  #ifndef DISABLE_CAN
-  			  newFrame.id = tempOffset + i;
-  			  bxCan_sendFrame(&newFrame);
-  #endif
-  		  }
-  		  osDelay(TMT_Interval);
-  #ifndef DISABLE_CAN
-  	  }else{
-  		  osDelay(1);
-  	  }
-  #endif
-    }
-
-  #else
-    for(;;){
-  	  osDelay(1000);
-    }
-  #endif
+					if(microCelcius >= OVER_TEMPERATURE || microCelcius <= UNDER_TEMPERATURE) assert_bps_fault(tempOffset+i*2+j, microCelcius);
+#ifndef DISABLE_CAN
+					*(int32_t*)(&(newFrame.Data[j*4])) = __REV(microCelcius);
+#endif
+				}
+#ifndef DISABLE_CAN
+				newFrame.id = tempOffset + i;
+				bxCan_sendFrame(&newFrame);
+#endif
+			}
+			osDelay(TMT_Interval);
+#ifndef DISABLE_CAN
+		}else{
+			osDelay(1);
+		}
+#endif
+	}
+#else
+	for(;;){
+		osDelay(1000);
+	}
+#endif
   /* USER CODE END doTMT */
 }
 
@@ -1052,14 +1047,12 @@ void doTMT(void const * argument)
 void doFucktard(void const * argument)
 {
   /* USER CODE BEGIN doFucktard */
-  /* Infinite loop */
-  for(;;)
-  {
-    HAL_GPIO_TogglePin(FAN_GPIO_Port, FAN_Pin);
-    osDelay(2500);
-    HAL_GPIO_TogglePin(BSD_GPIO_Port, BSD_Pin);
-    osDelay(2500);
-  }
+	for(;;){
+		HAL_GPIO_TogglePin(FAN_GPIO_Port, FAN_Pin);
+		osDelay(2500);
+		HAL_GPIO_TogglePin(BSD_GPIO_Port, BSD_Pin);
+		osDelay(2500);
+	}
   /* USER CODE END doFucktard */
 }
 
@@ -1067,7 +1060,6 @@ void doFucktard(void const * argument)
 void TmrKickDog(void const * argument)
 {
   /* USER CODE BEGIN TmrKickDog */
-	// CHECKED
 	taskENTER_CRITICAL();
 	HAL_WWDG_Refresh(&hwwdg);
 	taskEXIT_CRITICAL();
@@ -1081,8 +1073,8 @@ void TmrSendHB(void const * argument)
 	// CHECKED
 	static Can_frame_t newFrame;
 
-//	newFrame.isExt = 0;
-//	newFrame.isRemote = 0;
+	// newFrame.isExt = 0;
+	// newFrame.isRemote = 0;
 	// ^ is initialized as 0
 
 	if(getSelfState() == ACTIVE){
@@ -1148,7 +1140,7 @@ void Error_Handler(void)
   while(1)
   {
   }
-  /* USER CODE END Error_Handler */ 
+  /* USER CODE END Error_Handler */
 }
 
 #ifdef USE_FULL_ASSERT
@@ -1173,10 +1165,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
