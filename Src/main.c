@@ -803,6 +803,13 @@ void doRT(void const * argument)
 	newFrame.isExt = 0;
 	newFrame.isRemote = 0;
 	newFrame.dlc = 8;
+    
+    static Can_frame_t dcFrame;
+    dcFrame.dlc = 0;
+    dcFrame.id = 0x701;
+    dcFrame.isExt = 0;
+    dcFrame.isRemote = 0;
+    uint8_t dcSent = 0;
 #else
 	osDelay(10);
 #endif
@@ -820,13 +827,16 @@ void doRT(void const * argument)
 			xSemaphoreTake(mcp3909_DRHandle, portMAX_DELAY);
 			xSemaphoreTake(mcp3909_RXHandle, portMAX_DELAY);
 			mcp3909_parseChannelData(&hmcp1);
-
+            
 			while(!mcp3909_verify(&hmcp1)){
+                if(!dcSent) bxCan_sendFrame(&dcFrame);
+                dcSent = 1;
 				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
 				EM_Init();
 				osDelay(100);
+                HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
 			}
-			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+            dcSent = 0;
 
 #ifndef DISABLE_CAN
 			int32_t temp;
@@ -889,6 +899,12 @@ void doSMT(void const * argument)
 	newFrame.dlc = 8;
 	newFrame.isExt = 0;
 	newFrame.isRemote = 0;
+    
+    static Can_frame_t dcFrame;
+    dcFrame.dlc = 0;
+    dcFrame.id = 0x702;
+    dcFrame.isExt = 0;
+    dcFrame.isRemote = 0;
 #else
 	osDelay(10);
 #endif
@@ -897,14 +913,16 @@ void doSMT(void const * argument)
 #ifndef DISABLE_CAN
 		if((selfStatusWord & 0x07) == ACTIVE){
 #endif
-			if(ltc68041_statTest(&bms1)){
+			if(ltc68041_statTest(&hbms1)){
+                bxCan_sendFrame(&dcFrame);
 				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
 				osDelay(100);
 				while(ltc68041_Initialize(&hbms1) != 0){
+                    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
 					osDelay(100);
 				}
+                HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
 			}
-			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
 
 			ltc68041_clearCell(&hbms1);
 			osDelay(3);
