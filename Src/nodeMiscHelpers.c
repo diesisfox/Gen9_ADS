@@ -157,7 +157,7 @@ void assert_bps_fault(uint16_t addr, uint32_t value){	//addr and value of out of
 //	for(;;);
 
 	//assert signal
-	HAL_GPIO_WritePin(BSD_GPIO_Port, BSD_Pin, RESET);
+	HAL_GPIO_WritePin(BSD_GPIO_Port, BSD_Pin, SET);
 }
 
 uint8_t valToHex(uint8_t i){

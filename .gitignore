@@ -26,6 +26,8 @@ BuildLog.log
 **/Exe/*.sim
 **/Exe/*.out
 **/List/*.map
+*.out
+*.map
 
 # IAR Debug Obj  
 **/Obj/*.pbi
