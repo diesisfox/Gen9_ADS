@@ -35,7 +35,7 @@
 
 #ifndef NODECONF_H_
 #define NODECONF_H_
-   
+
 #include "stm32f4xx_hal.h"
 #include "../../CAN_ID.h"
 
@@ -54,18 +54,21 @@ extern uint32_t selfStatusWord;	// Initialize
 #define RT_Broadcast	20			//Multiplier of RT_Interval
 
 //MCP3903 PSB Settings:
-#define PSB_OA			4000000		//uA
-#define PSB_UA			-4000000	//uA
-#define PSB_OV			140000000	//uV
-#define PSB_UV			80000000	//uV
+#define PSB_OA			 40000000	//uA
+#define PSB_UA			-40000000	//uA
+#define PSB_OV			139200000	//uV
+#define PSB_UV			 88000000	//uV
 
 //LTC6801 Settings:
+// #define vovTo100uV(x) ((x+1)*16)
 #define LTC_TOTAL_IC    3  	// Number of LTC boards in the stack
-#define VUV             (1720U)	// LTC Undervoltage set point 2.754V
-#define VOV             (2715U)	// LTC Overvoltage set point 4.344V
+#define VUV             (1718U)	// LTC Undervoltage set point 2.7504V
+#define VOV             (2718U)	// LTC Overvoltage set point 4.3504V
 static const uint16_t LTC_CELL_EN[] = {0x3ff, 0x7ff, 0x7ff};
 
-
-
+//Thermistor settings:
+#define TEMP_CHANNELS		32
+// #define OVER_TEMPERATURE	60000000
+// #define UNDER_TEMPERATURE	 0000000
 
 #endif /* NODECONF_H_ */

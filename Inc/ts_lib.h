@@ -8,12 +8,19 @@
 #include "serial.h"
 #include "stm32f4xx.h"
 #include "cmsis_os.h"
+#include "nodeConf.h"
 
 //MAX_CHANNEL specifies the number of channels of the mux in use
+#ifndef TEMP_CHANNELS
 #define TEMP_CHANNELS 32
+#endif
 #define TEMP_MUXES ((TEMP_CHANNELS-1)/16+1)
-#define OVER_TEMPERATURE 65000000
-#define UNDER_TEMPERATURE 5000000
+#ifndef OVER_TEMPERATURE
+#define OVER_TEMPERATURE 60000000
+#endif
+#ifndef UNDER_TEMPERATURE
+#define UNDER_TEMPERATURE 0000000
+#endif
 #define TEMP_OVERSAMPLING 16
 
 void Temp_begin(ADC_HandleTypeDef* hadc_in);
