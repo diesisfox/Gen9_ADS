@@ -193,14 +193,14 @@ void EM_Init(){
 		hmcp1.channel[i].boost = BOOST_ON;
 		hmcp1.channel[i].dither = DITHER_ON;
 		hmcp1.channel[i].reset = RESET_OFF;
-		hmcp1.channel[i].shutdown = SHUTDOWN_OFF;
+		hmcp1.channel[i].shutdown = SHUTDOWN_ON;
 		hmcp1.channel[i].resolution = RES_24;
 	}
 
     // Amplify current sense channels to improve dynamic resolution
     hmcp1.channel[1].PGA = PGA_2;
-    hmcp1.channel[3].PGA = PGA_4;   // TODO: Remove for BPS
-    hmcp1.channel[5].PGA = PGA_4;   // TODO: Remove for BPS
+    hmcp1.channel[1].shutdown = SHUTDOWN_OFF;
+    hmcp1.channel[0].shutdown = SHUTDOWN_OFF;
 
 	hmcp1.extCLK = 0;
 	hmcp1.extVREF = 0;
@@ -682,10 +682,10 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, FAN_Pin|EN1_Pin|S2_Pin|S1_Pin 
-                          |S3_Pin|S0_Pin|BSD_Pin, GPIO_PIN_RESET);
+                          |S3_Pin|S0_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(MCP2_CS_GPIO_Port, MCP2_CS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, BSD_Pin|MCP2_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -1068,9 +1068,9 @@ void doFucktard(void const * argument)
 {
   /* USER CODE BEGIN doFucktard */
 	for(;;){
-		HAL_GPIO_TogglePin(FAN_GPIO_Port, FAN_Pin);
-		osDelay(2500);
-		HAL_GPIO_TogglePin(BSD_GPIO_Port, BSD_Pin);
+//		HAL_GPIO_TogglePin(FAN_GPIO_Port, FAN_Pin);
+//		osDelay(2500);
+//		HAL_GPIO_TogglePin(BSD_GPIO_Port, BSD_Pin);
 		osDelay(2500);
 	}
   /* USER CODE END doFucktard */

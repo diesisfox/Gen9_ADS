@@ -54,7 +54,7 @@ extern uint32_t selfStatusWord;	// Initialize
 #define RT_Broadcast	20			//Multiplier of RT_Interval
 
 //MCP3903 PSB Settings:
-#define PSB_OA			 40000000	//uA
+#define PSB_OA			 4000000   //uA
 #define PSB_UA			-40000000	//uA
 #define PSB_OV			139200000	//uV
 #define PSB_UV			 88000000	//uV
@@ -68,7 +68,7 @@ static const uint16_t LTC_CELL_EN[] = {0x3ff, 0x7ff, 0x7ff};
 
 //Thermistor settings:
 #define TEMP_CHANNELS		32
-// #define OVER_TEMPERATURE	60000000
-// #define UNDER_TEMPERATURE	 0000000
+ #define OVER_TEMPERATURE	30000000
+ #define UNDER_TEMPERATURE	 0000000
 
 #endif /* NODECONF_H_ */
