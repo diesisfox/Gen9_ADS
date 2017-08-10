@@ -820,7 +820,7 @@ void doRT(void const * argument)
   for(;;)
   {
 #ifndef DISABLE_CAN
-	  if((selfStatusWord & 0x07) == ACTIVE){
+//	  if((selfStatusWord & 0x07) == ACTIVE){
 #endif
 	  	previousWaitTime = osKernelSysTick();
 		mcp3909_wakeup(&hmcp1);
@@ -854,9 +854,9 @@ void doRT(void const * argument)
 		osDelayUntil(&previousWaitTime, RT_Interval);
 //		osDelay(RT_Interval);
 #ifndef DISABLE_CAN
-	  }else{
-		  osDelay(1);
-	  }
+//	  }else{
+//		  osDelay(1);
+//	  }
 #endif
   }
 #else
