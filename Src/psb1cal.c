@@ -24,6 +24,6 @@ int32_t psb1ch0Map(int32_t raw){
 //returns microAmps
 int32_t psb1ch1Map(int32_t raw){
     if(raw&0x800000) raw -= 0x1000000;
-	return (int32_t)roundivide(((int64_t)raw*1000000000 - 38037876712329),82194620);
+	return (int32_t)roundivide(((int64_t)raw*1000000000 -  43669272320585), 90143846);
 //    return (int32_t)(((int64_t)raw*1000000000-69080970588235)/(int64_t)165597927);
 }
