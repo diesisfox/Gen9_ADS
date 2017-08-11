@@ -1,15 +1,15 @@
 /*
- * psb1cal.h
+ * psb0cal.h
  *
- *  Created on: Jun 12, 2017
+ *  Created on: Jun 13, 2017
  *      Author: jamesliu
  *
  *  Misc. functions that groups specific set of actions in a friendlier way
  */
 
-#ifndef PSB1CAL_H_
-#define PSB1CAL_H_
-   
+#ifndef PSB0CAL_H_
+#define PSB0CAL_H_
+
 #include "main.h"
 #include "nodeConf.h"
 #include "stm32f4xx_hal.h"
@@ -29,7 +29,11 @@
 
 #define roundivide(a,b) (((((a)<0)&&((b)<0))||(((a)>=0)&&((b)>=0)))?(((a)+((b)/2))/(b)):(((a)-((b)/2))/(b)))
 
-int32_t psb1ch1Map(int32_t raw);
-int32_t psb1ch0Map(int32_t raw);
+int32_t psb0ch0Map(int32_t raw);
+int32_t psb0ch1Map(int32_t raw);
+int32_t psb0ch2Map(int32_t raw);
+int32_t psb0ch3Map(int32_t raw);
+int32_t psb0ch4Map(int32_t raw);
+int32_t psb0ch5Map(int32_t raw);
 
-#endif /* PSB1CAL_H_ */
+#endif /* PSB0CAL_H_ */

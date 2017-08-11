@@ -5,41 +5,41 @@
   ******************************************************************************
   * This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
+  * USER CODE END. Other portions of this file, whether
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
-  * Copyright (c) 2017 STMicroelectronics International N.V. 
+  * Copyright (c) 2017 STMicroelectronics International N.V.
   * All rights reserved.
   *
-  * Redistribution and use in source and binary forms, with or without 
+  * Redistribution and use in source and binary forms, with or without
   * modification, are permitted, provided that the following conditions are met:
   *
-  * 1. Redistribution of source code must retain the above copyright notice, 
+  * 1. Redistribution of source code must retain the above copyright notice,
   *    this list of conditions and the following disclaimer.
   * 2. Redistributions in binary form must reproduce the above copyright notice,
   *    this list of conditions and the following disclaimer in the documentation
   *    and/or other materials provided with the distribution.
-  * 3. Neither the name of STMicroelectronics nor the names of other 
-  *    contributors to this software may be used to endorse or promote products 
+  * 3. Neither the name of STMicroelectronics nor the names of other
+  *    contributors to this software may be used to endorse or promote products
   *    derived from this software without specific written permission.
-  * 4. This software, including modifications and/or derivative works of this 
+  * 4. This software, including modifications and/or derivative works of this
   *    software, must execute solely and exclusively on microcontroller or
   *    microprocessor devices manufactured by or for STMicroelectronics.
-  * 5. Redistribution and use of this software other than as permitted under 
-  *    this license is void and will automatically terminate your rights under 
-  *    this license. 
+  * 5. Redistribution and use of this software other than as permitted under
+  *    this license is void and will automatically terminate your rights under
+  *    this license.
   *
-  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
-  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
-  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS"
+  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT
+  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
   * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
-  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
+  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT
   * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
   * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
-  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
   * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
   * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
@@ -58,13 +58,10 @@
 #include "ts_lib.h"
 #include "thermistor.h"
 #include "nodeMiscHelpers.h"
-#include "psb1cal.h"
+#include "psb0cal.h"
 
 // RTOS Task functions + helpers
 #include "Can_Processor.h"
-
-//LTC6804
-#include "LTC68041.h"
 
 //MCP3909
 #include "mcp3909.h"
@@ -106,8 +103,6 @@ osSemaphoreId mcp3909_RXHandle;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-bmsChainHandleTypeDef hbms1;
-
 MCP3909HandleTypeDef hmcp1;
 uint8_t mcpRxBuf[REG_LEN * REGS_NUM];
 uint8_t mcpTxBuf[REG_LEN * REGS_NUM + CTRL_LEN];
@@ -148,73 +143,13 @@ void TmrSendHB(void const * argument);
 /* Private function prototypes -----------------------------------------------*/
 
 // Data Ready pin triggered callback (PA1)
-void HAL_GPIO_EXTI_Callback(uint16_t pinNum){
-	if(init_Done){
-		if(pinNum == DR1_Pin){
-	//		HAL_NVIC_DisableIRQ(EXTI1_IRQn);
-	//		HAL_NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
-			HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
-	//		HAL_NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
-			mcp3909_readAllChannels(&hmcp1,hmcp1.pRxBuf);
-			xSemaphoreGiveFromISR(mcp3909_DRHandle, NULL);
-		}
-	}
-}
-
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi){
-	// Check which SPI issued interrupt
-	if(hspi == (hbms1.hspi)){
-		HAL_GPIO_WritePin(LTC_CS_GPIO_Port,LTC_CS_Pin, GPIO_PIN_SET);
-		xSemaphoreGiveFromISR(bmsTRxCompleteHandle, NULL);
-	}else if(hspi == (hmcp1.hspi)){
-		HAL_GPIO_WritePin(MCP1_CS_GPIO_Port,MCP1_CS_Pin, GPIO_PIN_SET);
-		xSemaphoreGiveFromISR(mcp3909_RXHandle, NULL);
-	}
-}
-
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
-	// Check which SPI issued interrupt
-	if(hspi == (hbms1.hspi)){
-		HAL_GPIO_WritePin(LTC_CS_GPIO_Port,LTC_CS_Pin, GPIO_PIN_SET);
-	}else if(hspi == (hmcp1.hspi)){
-		HAL_GPIO_WritePin(MCP1_CS_GPIO_Port,MCP1_CS_Pin, GPIO_PIN_SET);
-	}
-}
-
-void EM_Init(){
-	hmcp1.phase[0] = 0;
-	hmcp1.phase[1] = 0;
-	hmcp1.phase[2] = 0;
-
-    // TODO: Shutdown channels 2-5 for BPS
-	for(uint8_t i= 0; i < MAX_CHANNEL_NUM; i++){
-		hmcp1.channel[i].PGA = PGA_1;
-		hmcp1.channel[i].boost = BOOST_ON;
-		hmcp1.channel[i].dither = DITHER_ON;
-		hmcp1.channel[i].reset = RESET_OFF;
-		hmcp1.channel[i].shutdown = SHUTDOWN_ON;
-		hmcp1.channel[i].resolution = RES_24;
-	}
-
-    // Amplify current sense channels to improve dynamic resolution
-    hmcp1.channel[1].PGA = PGA_2;
-    hmcp1.channel[1].shutdown = SHUTDOWN_OFF;
-    hmcp1.channel[0].shutdown = SHUTDOWN_OFF;
-
-	hmcp1.extCLK = 0;
-	hmcp1.extVREF = 0;
-	hmcp1.hspi = &hspi2;
-	hmcp1.osr = OSR_256;
-	hmcp1.prescale = PRESCALE_1;
-	hmcp1.readType = READ_TYPE;
-
-	hmcp1.pRxBuf = mcpRxBuf;
-	hmcp1.pTxBuf = mcpTxBuf;
-
-//	HAL_NVIC_SetPriority(EXTI1_IRQn, 6, 0); // set DR pin interrupt priority
-//	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 6, 0);
-	mcp3909_init(&hmcp1);
-}
+void HAL_GPIO_EXTI_Callback(uint16_t pinNum);
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi);
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi);
+void EM_Init();
+void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan);
+void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan);
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -226,10 +161,9 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 //#define DISABLE_RT
-//#define DISABLE_SMT
 //#define DISABLE_TMT
 //#define DISABLE_CAN
-#define DISABLE_SERIAL_OUT
+	#define DISABLE_SERIAL_OUT
 	selfStatusWord = INIT;
   /* USER CODE END 1 */
 
@@ -260,48 +194,30 @@ int main(void)
   MX_CAN2_Init();
 
   /* USER CODE BEGIN 2 */
-  __HAL_GPIO_EXTI_CLEAR_IT(DR1_Pin);
-  HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
-  __HAL_GPIO_EXTI_CLEAR_IT(DR1_Pin);
+	__HAL_GPIO_EXTI_CLEAR_IT(DR1_Pin);
+	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+	__HAL_GPIO_EXTI_CLEAR_IT(DR1_Pin);
 
-  init_Done = 1;
+	init_Done = 1;
 
-  Serial2_begin();
-    Serial2_writeBuf("Booting... \n");
+	Serial2_begin();
+	Serial2_writeBuf("Booting... \n");
 
-    ////*IF YOU GET HCAN1 NOT DEFINED ERROR, CHECK NODECONF.H FIRST!*////
-    bxCan_begin(&hcan1, &mainCanRxQHandle, &mainCanTxQHandle);
-    // TODO: Set node-specific CAN filters
-//    bxCan_addMaskedFilterStd(0,0,0); // Filter: Status word group (ignore nodeID)
-//    bxCan_addMaskedFilterExt(0,0,0);
-    bxCan_addMaskedFilterStd(p2pOffset,0xFF0,0);
+	bxCan_begin(&hcan1, &mainCanRxQHandle, &mainCanTxQHandle);
+	bxCan_addMaskedFilterStd(p2pOffset,0xFF0,0);
 
-#ifndef DISABLE_TMT
-    Temp_begin(&hadc1);
-#endif
+	bxCan2_begin(&hcan2, &can2RxQHandle, &can2TxQHandle);
+	bxCan2_addMaskedFilterStd(0,0,0);
+	bxCan2_addMaskedFilterExt(0,0,0);
 
-  #ifndef DISABLE_SMT
-    /*
-     * LTC68041 SETUP
-     */
-  //  Set up the global ADC configs for the LTC6804
-  //  ltc68041ChainInitStruct bmsInitParams[LTC_TOTAL_IC];
-  //  LTC68041_Initialize(&hbms1, bmsInitParams);
-    hbms1.hspi = &hspi3;
+	#ifndef DISABLE_TMT
+		Temp_begin(&hadc1);
+	#endif
 
-    HAL_Delay(3);	// Empirically tested wait to correct SPI failing; see associated commit note
-
-    if(ltc68041_Initialize(&hbms1) != 0){
-      HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin,1);
-  	  for(;;);
-    }
-    HAL_WWDG_Refresh(&hwwdg);
-  #endif
-
-  #ifndef DISABLE_RT
-    EM_Init();
-    HAL_WWDG_Refresh(&hwwdg);
-  #endif
+	#ifndef DISABLE_RT
+		EM_Init();
+		HAL_WWDG_Refresh(&hwwdg);
+	#endif
   /* USER CODE END 2 */
 
   /* Create the mutex(es) */
@@ -390,11 +306,11 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
- 
+
 
   /* Start scheduler */
   osKernelStart();
-  
+
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
@@ -418,13 +334,13 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-    /**Configure the main internal regulator output voltage 
+    /**Configure the main internal regulator output voltage
     */
   __HAL_RCC_PWR_CLK_ENABLE();
 
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-    /**Initializes the CPU, AHB and APB busses clocks 
+    /**Initializes the CPU, AHB and APB busses clocks
     */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
@@ -440,7 +356,7 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Initializes the CPU, AHB and APB busses clocks 
+    /**Initializes the CPU, AHB and APB busses clocks
     */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -454,11 +370,11 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure the Systick interrupt time 
+    /**Configure the Systick interrupt time
     */
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-    /**Configure the Systick 
+    /**Configure the Systick
     */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
@@ -472,7 +388,7 @@ static void MX_ADC1_Init(void)
 
   ADC_ChannelConfTypeDef sConfig;
 
-    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
     */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
@@ -491,7 +407,7 @@ static void MX_ADC1_Init(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
     */
   sConfig.Channel = ADC_CHANNEL_6;
   sConfig.Rank = 1;
@@ -501,7 +417,7 @@ static void MX_ADC1_Init(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
     */
   sConfig.Channel = ADC_CHANNEL_14;
   sConfig.Rank = 2;
@@ -510,7 +426,7 @@ static void MX_ADC1_Init(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
     */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = 3;
@@ -625,10 +541,10 @@ static void MX_WWDG_Init(void)
 
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-static void MX_DMA_Init(void) 
+static void MX_DMA_Init(void)
 {
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
@@ -653,9 +569,9 @@ static void MX_DMA_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -678,7 +594,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, LD2_Pin|EN2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, EN1_Pin|S2_Pin|S1_Pin|S3_Pin 
+  HAL_GPIO_WritePin(GPIOB, EN1_Pin|S2_Pin|S1_Pin|S3_Pin
                           |S0_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
@@ -735,7 +651,92 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_GPIO_EXTI_Callback(uint16_t pinNum){
+	if(init_Done){
+		if(pinNum == DR1_Pin){
+	//		HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+	//		HAL_NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
+			HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+	//		HAL_NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
+			mcp3909_readAllChannels(&hmcp1,hmcp1.pRxBuf);
+			xSemaphoreGiveFromISR(mcp3909_DRHandle, NULL);
+		}
+	}
+}
 
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi){
+	// Check which SPI issued interrupt
+	if(hspi == (hmcp1.hspi)){
+		HAL_GPIO_WritePin(MCP1_CS_GPIO_Port,MCP1_CS_Pin, GPIO_PIN_SET);
+		xSemaphoreGiveFromISR(mcp3909_RXHandle, NULL);
+	}
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
+	// Check which SPI issued interrupt
+	if(hspi == (hmcp1.hspi)){
+		HAL_GPIO_WritePin(MCP1_CS_GPIO_Port,MCP1_CS_Pin, GPIO_PIN_SET);
+	}
+}
+
+void EM_Init(){
+	hmcp1.phase[0] = 0;
+	hmcp1.phase[1] = 0;
+	hmcp1.phase[2] = 0;
+
+	// TODO: Shutdown channels 2-5 for BPS
+	for(uint8_t i= 0; i < MAX_CHANNEL_NUM; i++){
+		hmcp1.channel[i].PGA = PGA_1;
+		hmcp1.channel[i].boost = BOOST_ON;
+		hmcp1.channel[i].dither = DITHER_ON;
+		hmcp1.channel[i].reset = RESET_OFF;
+		hmcp1.channel[i].shutdown = SHUTDOWN_OFF;
+		hmcp1.channel[i].resolution = RES_24;
+	}
+
+	// Amplify current sense channels to improve dynamic resolution
+	hmcp1.channel[1].PGA = PGA_4;
+	hmcp1.channel[3].PGA = PGA_4;
+	hmcp1.channel[5].PGA = PGA_4;
+
+	hmcp1.extCLK = 0;
+	hmcp1.extVREF = 0;
+	hmcp1.hspi = &hspi2;
+	hmcp1.osr = OSR_256;
+	hmcp1.prescale = PRESCALE_1;
+	hmcp1.readType = READ_TYPE;
+
+	hmcp1.pRxBuf = mcpRxBuf;
+	hmcp1.pTxBuf = mcpTxBuf;
+
+	// HAL_NVIC_SetPriority(EXTI1_IRQn, 6, 0); // set DR pin interrupt priority
+	// HAL_NVIC_SetPriority(EXTI9_5_IRQn, 6, 0);
+	mcp3909_init(&hmcp1);
+}
+
+void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan){
+	if (hcan == &hcan1){
+		CAN1_TxCpltCallback(hcan);
+	}else if (hcan == &hcan2){
+		CAN2_TxCpltCallback(hcan);
+	}
+}
+
+void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
+	if (hcan == &hcan1){
+		CAN1_RxCpltCallback(hcan);
+	}else if (hcan == &hcan2){
+		CAN2_RxCpltCallback(hcan);
+	}
+}
+
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan){
+	if (hcan == &hcan1){
+		CAN1_ErrorCallback(hcan);
+	}else if (hcan == &hcan2){
+		CAN2_ErrorCallback(hcan);
+	}
+}
 /* USER CODE END 4 */
 
 /* doApplication function */
@@ -743,10 +744,11 @@ void doApplication(void const * argument)
 {
 
   /* USER CODE BEGIN 5 */
+	vTaskSuspend(NULL);
 	for(;;){
-		osDelay(10000);
+		osDelay(100000);
 	}
-  /* USER CODE END 5 */ 
+  /* USER CODE END 5 */
 }
 
 /* doProcessCan function */
@@ -776,13 +778,13 @@ void doRT(void const * argument)
 	newFrame.isExt = 0;
 	newFrame.isRemote = 0;
 	newFrame.dlc = 8;
-    
-    static Can_frame_t dcFrame;
-    dcFrame.dlc = 0;
-    dcFrame.id = 0x701;
-    dcFrame.isExt = 0;
-    dcFrame.isRemote = 0;
-    uint8_t dcSent = 0;
+
+	static Can_frame_t dcFrame;
+	dcFrame.dlc = 0;
+	dcFrame.id = 0x701;
+	dcFrame.isExt = 0;
+	dcFrame.isRemote = 0;
+	uint8_t dcSent = 0;
 #else
 	osDelay(10);
 #endif
@@ -800,46 +802,46 @@ void doRT(void const * argument)
 			xSemaphoreTake(mcp3909_DRHandle, portMAX_DELAY);
 			xSemaphoreTake(mcp3909_RXHandle, portMAX_DELAY);
 			mcp3909_parseChannelData(&hmcp1);
-            
+
 			while(!mcp3909_verify(&hmcp1)){
-                if(!dcSent) bxCan_sendFrame(&dcFrame);
-                dcSent = 1;
+				if(!dcSent) bxCan_sendFrame(&dcFrame);
+				dcSent = 1;
 				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
 				EM_Init();
 				osDelay(100);
-                HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
 			}
-            dcSent = 0;
+			dcSent = 0;
 
 #ifndef DISABLE_CAN
 			int32_t temp;
 
 			newFrame.id = battPwr;
-			temp = psb1ch0Map((hmcp1.registers[0]));
-			if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x200, temp);
+			temp = psb0ch0Map((hmcp1.registers[0]));
+			// if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x200, temp);
 			*(int32_t*)(&(newFrame.Data[0])) = __REV(temp);
-			temp= psb1ch1Map((hmcp1.registers[1]));
-			if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x201, temp);
+			temp= psb0ch1Map((hmcp1.registers[1]));
+			// if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x201, temp);
 			*(int32_t*)(&(newFrame.Data[4])) = __REV(temp);
 			bxCan_sendFrame(&newFrame);
 
-			// newFrame.id = motorPwr;
-			// temp = psb1ch0Map(__REV(hmcp1.registers[2]));
+			newFrame.id = motorPwr;
+			temp = psb0ch2Map(__REV(hmcp1.registers[2]));
 			// if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x202, temp);
-			// *(int32_t*)(&(newFrame.Data[0])) = temp;
-			// temp= psb1ch1Map(__REV(hmcp1.registers[3]));
+			*(int32_t*)(&(newFrame.Data[0])) = temp;
+			temp= psb0ch3Map(__REV(hmcp1.registers[3]));
 			// if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x203, temp);
-			// *(int32_t*)(&(newFrame.Data[4])) = temp;
-			// bxCan_sendFrame(&newFrame);
+			*(int32_t*)(&(newFrame.Data[4])) = temp;
+			bxCan_sendFrame(&newFrame);
 
-			// newFrame.id = lpBusPwr;
-			// temp = psb1ch0Map(__REV(hmcp1.registers[4]));
+			newFrame.id = lpBusPwr;
+			temp = psb0ch4Map(__REV(hmcp1.registers[4]));
 			// if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x204, temp);
-			// *(int32_t*)(&(newFrame.Data[0])) = temp;
-			// temp= psb1ch1Map(__REV(hmcp1.registers[5]));
+			*(int32_t*)(&(newFrame.Data[0])) = temp;
+			temp= psb0ch5Map(__REV(hmcp1.registers[5]));
 			// if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x205, temp);
-			// *(int32_t*)(&(newFrame.Data[4])) = temp;
-			// bxCan_sendFrame(&newFrame);
+			*(int32_t*)(&(newFrame.Data[4])) = temp;
+			bxCan_sendFrame(&newFrame);
 #endif
 
 			// XXX: Energy metering algorithm
@@ -914,11 +916,40 @@ void doTMT(void const * argument)
 void doHouseKeeping(void const * argument)
 {
   /* USER CODE BEGIN doHouseKeeping */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+	static int bamboozle;
+	bamboozle = 0;
+	static int bamboozle2;
+	bamboozle2 = 0;
+
+	for(;;){
+		if(hcan1.State == HAL_CAN_STATE_READY || hcan1.State == HAL_CAN_STATE_BUSY_TX || \
+		hcan1.State == HAL_CAN_STATE_TIMEOUT || hcan1.State == HAL_CAN_STATE_ERROR){
+			bamboozle++;
+		}else{
+			bamboozle = 0;
+		}
+		if(bamboozle > 8){
+			HAL_CAN_Receive_IT(&hcan1, 0);
+		}
+		if(bamboozle > 12){
+			NVIC_SystemReset();
+		}
+
+		if(hcan2.State == HAL_CAN_STATE_READY || hcan2.State == HAL_CAN_STATE_BUSY_TX || \
+		hcan2.State == HAL_CAN_STATE_TIMEOUT || hcan2.State == HAL_CAN_STATE_ERROR){
+			bamboozle2++;
+		}else{
+			bamboozle2 = 0;
+		}
+		if(bamboozle2 > 8){
+			HAL_CAN_Receive_IT(&hcan2, 0);
+		}
+		if(bamboozle2 > 12){
+			NVIC_SystemReset();
+		}
+
+		osDelay(17);    //nice prime number
+	}
   /* USER CODE END doHouseKeeping */
 }
 
@@ -926,11 +957,12 @@ void doHouseKeeping(void const * argument)
 void doPPTPoll(void const * argument)
 {
   /* USER CODE BEGIN doPPTPoll */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+	static Can_frame_t newFrame;
+
+	for(;;){
+		xQueueReceive(can2RxQHandle, &newFrame, portMAX_DELAY);
+		bxCan_sendFrame(&newFrame);
+	}
   /* USER CODE END doPPTPoll */
 }
 
@@ -1015,10 +1047,10 @@ void _Error_Handler(char * file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  while(1) 
+  while(1)
   {
   }
-  /* USER CODE END Error_Handler_Debug */ 
+  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef USE_FULL_ASSERT
@@ -1043,10 +1075,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
