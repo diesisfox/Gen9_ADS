@@ -76,13 +76,11 @@ ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
 CAN_HandleTypeDef hcan1;
+CAN_HandleTypeDef hcan2;
 
 SPI_HandleTypeDef hspi2;
-SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi2_rx;
 DMA_HandleTypeDef hdma_spi2_tx;
-DMA_HandleTypeDef hdma_spi3_rx;
-DMA_HandleTypeDef hdma_spi3_tx;
 
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
@@ -93,17 +91,18 @@ WWDG_HandleTypeDef hwwdg;
 osThreadId ApplicationHandle;
 osThreadId Can_ProcessorHandle;
 osThreadId RTHandle;
-osThreadId SMTHandle;
 osThreadId TMTHandle;
-osThreadId fucktardHandle;
+osThreadId HouseKeepingHandle;
+osThreadId PPTPollHandle;
 osMessageQId mainCanTxQHandle;
 osMessageQId mainCanRxQHandle;
+osMessageQId can2TxQHandle;
+osMessageQId Can2RxQHandle;
 osTimerId WWDGTmrHandle;
 osTimerId HBTmrHandle;
 osMutexId swMtxHandle;
 osSemaphoreId mcp3909_DRHandle;
 osSemaphoreId mcp3909_RXHandle;
-osSemaphoreId bmsTRxCompleteHandle;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -134,14 +133,14 @@ static void MX_USART2_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_SPI2_Init(void);
-static void MX_SPI3_Init(void);
 static void MX_WWDG_Init(void);
+static void MX_CAN2_Init(void);
 void doApplication(void const * argument);
 void doProcessCan(void const * argument);
 void doRT(void const * argument);
-void doSMT(void const * argument);
 void doTMT(void const * argument);
-void doFucktard(void const * argument);
+void doHouseKeeping(void const * argument);
+void doPPTPoll(void const * argument);
 void TmrKickDog(void const * argument);
 void TmrSendHB(void const * argument);
 
@@ -257,8 +256,8 @@ int main(void)
   MX_ADC1_Init();
   MX_CAN1_Init();
   MX_SPI2_Init();
-  MX_SPI3_Init();
   MX_WWDG_Init();
+  MX_CAN2_Init();
 
   /* USER CODE BEGIN 2 */
   __HAL_GPIO_EXTI_CLEAR_IT(DR1_Pin);
@@ -323,10 +322,6 @@ int main(void)
   osSemaphoreDef(mcp3909_RX);
   mcp3909_RXHandle = osSemaphoreCreate(osSemaphore(mcp3909_RX), 1);
 
-  /* definition and creation of bmsTRxComplete */
-  osSemaphoreDef(bmsTRxComplete);
-  bmsTRxCompleteHandle = osSemaphoreCreate(osSemaphore(bmsTRxComplete), 1);
-
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -359,17 +354,17 @@ int main(void)
   osThreadDef(RT, doRT, osPriorityRealtime, 0, 512);
   RTHandle = osThreadCreate(osThread(RT), NULL);
 
-  /* definition and creation of SMT */
-  osThreadDef(SMT, doSMT, osPriorityAboveNormal, 0, 512);
-  SMTHandle = osThreadCreate(osThread(SMT), NULL);
-
   /* definition and creation of TMT */
   osThreadDef(TMT, doTMT, osPriorityHigh, 0, 512);
   TMTHandle = osThreadCreate(osThread(TMT), NULL);
 
-  /* definition and creation of fucktard */
-  osThreadDef(fucktard, doFucktard, osPriorityRealtime, 0, 512);
-  fucktardHandle = osThreadCreate(osThread(fucktard), NULL);
+  /* definition and creation of HouseKeeping */
+  osThreadDef(HouseKeeping, doHouseKeeping, osPriorityBelowNormal, 0, 512);
+  HouseKeepingHandle = osThreadCreate(osThread(HouseKeeping), NULL);
+
+  /* definition and creation of PPTPoll */
+  osThreadDef(PPTPoll, doPPTPoll, osPriorityNormal, 0, 512);
+  PPTPollHandle = osThreadCreate(osThread(PPTPoll), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -381,8 +376,16 @@ int main(void)
   mainCanTxQHandle = osMessageCreate(osMessageQ(mainCanTxQ), NULL);
 
   /* definition and creation of mainCanRxQ */
-  osMessageQDef(mainCanRxQ, 16, Can_frame_t);
+  osMessageQDef(mainCanRxQ, 32, Can_frame_t);
   mainCanRxQHandle = osMessageCreate(osMessageQ(mainCanRxQ), NULL);
+
+  /* definition and creation of can2TxQ */
+  osMessageQDef(can2TxQ, 32, Can_frame_t);
+  can2TxQHandle = osMessageCreate(osMessageQ(can2TxQ), NULL);
+
+  /* definition and creation of Can2RxQ */
+  osMessageQDef(Can2RxQ, 32, Can_frame_t);
+  Can2RxQHandle = osMessageCreate(osMessageQ(Can2RxQ), NULL);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -541,6 +544,29 @@ static void MX_CAN1_Init(void)
 
 }
 
+/* CAN2 init function */
+static void MX_CAN2_Init(void)
+{
+
+  hcan2.Instance = CAN2;
+  hcan2.Init.Prescaler = 10;
+  hcan2.Init.Mode = CAN_MODE_NORMAL;
+  hcan2.Init.SJW = CAN_SJW_1TQ;
+  hcan2.Init.BS1 = CAN_BS1_11TQ;
+  hcan2.Init.BS2 = CAN_BS2_4TQ;
+  hcan2.Init.TTCM = DISABLE;
+  hcan2.Init.ABOM = ENABLE;
+  hcan2.Init.AWUM = DISABLE;
+  hcan2.Init.NART = DISABLE;
+  hcan2.Init.RFLM = DISABLE;
+  hcan2.Init.TXFP = DISABLE;
+  if (HAL_CAN_Init(&hcan2) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
+
 /* SPI2 init function */
 static void MX_SPI2_Init(void)
 {
@@ -558,29 +584,6 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi2.Init.CRCPolynomial = 10;
   if (HAL_SPI_Init(&hspi2) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
-
-}
-
-/* SPI3 init function */
-static void MX_SPI3_Init(void)
-{
-
-  hspi3.Instance = SPI3;
-  hspi3.Init.Mode = SPI_MODE_MASTER;
-  hspi3.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi3.Init.CLKPolarity = SPI_POLARITY_HIGH;
-  hspi3.Init.CLKPhase = SPI_PHASE_2EDGE;
-  hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
-  hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi3.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi3) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
@@ -632,9 +635,6 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
   /* DMA1_Stream3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
@@ -647,9 +647,6 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
-  /* DMA1_Stream7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream7_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
@@ -675,17 +672,14 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, MCP1_CS_Pin|LTC_CS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(MCP1_CS_GPIO_Port, MCP1_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, LD2_Pin|EN2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, FAN_Pin|EN1_Pin|S2_Pin|S1_Pin 
-                          |S3_Pin|S0_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, BSD_Pin|MCP2_CS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, EN1_Pin|S2_Pin|S1_Pin|S3_Pin 
+                          |S0_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -707,15 +701,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : FAN_Pin S2_Pin S1_Pin S3_Pin 
-                           S0_Pin */
-  GPIO_InitStruct.Pin = FAN_Pin|S2_Pin|S1_Pin|S3_Pin 
-                          |S0_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
   /*Configure GPIO pin : EN1_Pin */
   GPIO_InitStruct.Pin = EN1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
@@ -723,11 +708,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(EN1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : DR2_Pin DR1_Pin */
-  GPIO_InitStruct.Pin = DR2_Pin|DR1_Pin;
+  /*Configure GPIO pins : S2_Pin S1_Pin S3_Pin S0_Pin */
+  GPIO_InitStruct.Pin = S2_Pin|S1_Pin|S3_Pin|S0_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : DR1_Pin */
+  GPIO_InitStruct.Pin = DR1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(DR1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : EN2_Pin */
   GPIO_InitStruct.Pin = EN2_Pin;
@@ -735,27 +727,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(EN2_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LTC_CS_Pin */
-  GPIO_InitStruct.Pin = LTC_CS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_Init(LTC_CS_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : BSD_Pin */
-  GPIO_InitStruct.Pin = BSD_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
-  HAL_GPIO_Init(BSD_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : MCP2_CS_Pin */
-  GPIO_InitStruct.Pin = MCP2_CS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_Init(MCP2_CS_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 6, 0);
@@ -890,130 +861,6 @@ void doRT(void const * argument)
   /* USER CODE END doRT */
 }
 
-/* doSMT function */
-void doSMT(void const * argument)
-{
-  /* USER CODE BEGIN doSMT */
-#ifndef DISABLE_SMT
-
-#ifndef DISABLE_CAN
-	static Can_frame_t newFrame;
-	newFrame.dlc = 8;
-	newFrame.isExt = 0;
-	newFrame.isRemote = 0;
-    
-    static Can_frame_t dcFrame;
-    dcFrame.dlc = 0;
-    dcFrame.id = 0x702;
-    dcFrame.isExt = 0;
-    dcFrame.isRemote = 0;
-#else
-	osDelay(10);
-#endif
-
-	for(;;){
-#ifndef DISABLE_CAN
-		if((selfStatusWord & 0x07) == ACTIVE){
-#endif
-			if(ltc68041_statTest(&hbms1)){
-                bxCan_sendFrame(&dcFrame);
-				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
-				osDelay(100);
-				while(ltc68041_Initialize(&hbms1) != 0){
-                    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
-					osDelay(100);
-				}
-                HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
-			}
-
-			ltc68041_clearCell(&hbms1);
-			osDelay(3);
-			ltc68041_startCVConv(&hbms1);
-
-			// Delay enough time but also make sure that the chip doesn't go into sleep mode
-			for(uint8_t i = 0; i < 9 * LTC_TOTAL_IC; i++){
-				osDelay(1);
-				wakeup_sleep();
-			}
-
-			// Read the register groups
-			ltc68041_readRegGroup(&hbms1, RDCVA);
-			osDelay(2);
-			ltc68041_parseCV(&hbms1, A);
-
-			ltc68041_readRegGroup(&hbms1, RDCVB);
-			osDelay(2);
-			ltc68041_parseCV(&hbms1, B);
-
-			ltc68041_readRegGroup(&hbms1, RDCVC);
-			osDelay(2);
-			ltc68041_parseCV(&hbms1, C);
-
-			ltc68041_readRegGroup(&hbms1, RDCVD);
-			osDelay(2);
-			ltc68041_parseCV(&hbms1, D);
-
-			// success = ltc68041_readRegGroup(&hbms1, RDSTATB);
-			// osDelay(2);
-			// ltc68041_parseSTAT(&hbms1, B);
-
-			#define vovTo100uV(x) ((x+1)*16)
-
-			for(uint8_t i=0; i<LTC_TOTAL_IC; i++){
-				for(uint8_t j=0; j<12; j+=4){
-#ifndef DISABLE_CAN
-					newFrame.id = voltOffset+i*3+j/4;
-					newFrame.Data[0] = hbms1.board[i].CVR[j+0] >> 8;
-					newFrame.Data[1] = hbms1.board[i].CVR[j+0] & 0xff;
-					newFrame.Data[2] = hbms1.board[i].CVR[j+1] >> 8;
-					newFrame.Data[3] = hbms1.board[i].CVR[j+1] & 0xff;
-					newFrame.Data[4] = hbms1.board[i].CVR[j+2] >> 8;
-					newFrame.Data[5] = hbms1.board[i].CVR[j+2] & 0xff;
-					newFrame.Data[6] = hbms1.board[i].CVR[j+3] >> 8;
-					newFrame.Data[7] = hbms1.board[i].CVR[j+3] & 0xff;
-					bxCan_sendFrame(&newFrame);
-#endif
-#ifndef DISABLE_SERIAL_OUT
-					static uint8_t msg[3];
-					msg[0] = hbms1.board[i].CVR[j+0] >> 8;
-					msg[1] = hbms1.board[i].CVR[j+0] & 0xff;
-					Serial2_writeBuf(msg);
-#endif
-					for(uint8_t k=0; k<4; k++){
-						if(LTC_CELL_EN[i] & (1<<(j+k))){
-							if(hbms1.board[i].CVR[j+k] > vovTo100uV(VOV) || hbms1.board[i].CVR[j+k] < vovTo100uV(VUV)){
-#ifndef DISABLE_SERIAL_OUT
-								Serial2_writeBuf(ohno);
-#endif
-								assert_bps_fault(i*3+j/4, hbms1.board[i].CVR[j+k]);
-							}
-						}
-					}
-				}
-			}
-
-			//Check OV UV flags
-			// for(int i=0; i<3; i++){
-			// 	if(hbms1.board[i].STATR[5] || (hbms1.board[i].STATR[6] & 0xff)){
-			// 		assert_bps_fault(i,0);
-			// 	}
-			// }
-
-			osDelay(SMT_Interval - (8+LTC_TOTAL_IC*4));
-#ifndef DISABLE_CAN
-		}else{
-			osDelay(1);
-		}
-#endif
-	}
-#else
-	for(;;){
-		osDelay(1000);
-	}
-#endif
-  /* USER CODE END doSMT */
-}
-
 /* doTMT function */
 void doTMT(void const * argument)
 {
@@ -1063,17 +910,28 @@ void doTMT(void const * argument)
   /* USER CODE END doTMT */
 }
 
-/* doFucktard function */
-void doFucktard(void const * argument)
+/* doHouseKeeping function */
+void doHouseKeeping(void const * argument)
 {
-  /* USER CODE BEGIN doFucktard */
-	for(;;){
-//		HAL_GPIO_TogglePin(FAN_GPIO_Port, FAN_Pin);
-//		osDelay(2500);
-//		HAL_GPIO_TogglePin(BSD_GPIO_Port, BSD_Pin);
-		osDelay(2500);
-	}
-  /* USER CODE END doFucktard */
+  /* USER CODE BEGIN doHouseKeeping */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END doHouseKeeping */
+}
+
+/* doPPTPoll function */
+void doPPTPoll(void const * argument)
+{
+  /* USER CODE BEGIN doPPTPoll */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END doPPTPoll */
 }
 
 /* TmrKickDog function */

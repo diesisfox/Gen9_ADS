@@ -72,8 +72,6 @@
 #define TEMP1_GPIO_Port GPIOA
 #define TEMP2_Pin GPIO_PIN_4
 #define TEMP2_GPIO_Port GPIOC
-#define FAN_Pin GPIO_PIN_0
-#define FAN_GPIO_Port GPIOB
 #define EN1_Pin GPIO_PIN_1
 #define EN1_GPIO_Port GPIOB
 #define S2_Pin GPIO_PIN_2
@@ -84,9 +82,6 @@
 #define S3_GPIO_Port GPIOB
 #define S0_Pin GPIO_PIN_15
 #define S0_GPIO_Port GPIOB
-#define DR2_Pin GPIO_PIN_8
-#define DR2_GPIO_Port GPIOC
-#define DR2_EXTI_IRQn EXTI9_5_IRQn
 #define DR1_Pin GPIO_PIN_9
 #define DR1_GPIO_Port GPIOC
 #define DR1_EXTI_IRQn EXTI9_5_IRQn
@@ -96,12 +91,6 @@
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
-#define LTC_CS_Pin GPIO_PIN_15
-#define LTC_CS_GPIO_Port GPIOA
-#define BSD_Pin GPIO_PIN_7
-#define BSD_GPIO_Port GPIOB
-#define MCP2_CS_Pin GPIO_PIN_8
-#define MCP2_CS_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
