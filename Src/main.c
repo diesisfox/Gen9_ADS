@@ -817,31 +817,25 @@ void doRT(void const * argument)
 #ifndef DISABLE_CAN
 			int32_t temp;
 
-			newFrame.id = battPwr;
+			newFrame.id = pptAPwr;
 			temp = psb0ch0Map((hmcp1.registers[0]));
-			// if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x200, temp);
 			*(int32_t*)(&(newFrame.Data[0])) = __REV(temp);
 			temp= psb0ch1Map((hmcp1.registers[1]));
-			// if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x201, temp);
 			*(int32_t*)(&(newFrame.Data[4])) = __REV(temp);
 			bxCan_sendFrame(&newFrame);
 
-			newFrame.id = motorPwr;
+			newFrame.id = pptBPwr;
 			temp = psb0ch2Map(__REV(hmcp1.registers[2]));
-			// if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x202, temp);
-			*(int32_t*)(&(newFrame.Data[0])) = temp;
+			*(int32_t*)(&(newFrame.Data[0])) = __REV(temp);
 			temp= psb0ch3Map(__REV(hmcp1.registers[3]));
-			// if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x203, temp);
-			*(int32_t*)(&(newFrame.Data[4])) = temp;
+			*(int32_t*)(&(newFrame.Data[4])) = __REV(temp);
 			bxCan_sendFrame(&newFrame);
 
-			newFrame.id = lpBusPwr;
+			newFrame.id = pptCPwr;
 			temp = psb0ch4Map(__REV(hmcp1.registers[4]));
-			// if(temp>PSB_OV || temp<PSB_UV) assert_bps_fault(0x204, temp);
-			*(int32_t*)(&(newFrame.Data[0])) = temp;
+			*(int32_t*)(&(newFrame.Data[0])) = __REV(temp);
 			temp= psb0ch5Map(__REV(hmcp1.registers[5]));
-			// if(temp>PSB_OA || temp<PSB_UA) assert_bps_fault(0x205, temp);
-			*(int32_t*)(&(newFrame.Data[4])) = temp;
+			*(int32_t*)(&(newFrame.Data[4])) = __REV(temp);
 			bxCan_sendFrame(&newFrame);
 #endif
 

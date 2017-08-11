@@ -43,13 +43,12 @@
 #define HB_Interval		1000		// Node heartbeat send interval	(soft ms)
 #define WD_Interval		16			// Watdog timer refresh interval (soft ms) | MUST BE LESS THAN 26!!!
 static const uint32_t firmwareString = 0x00000001;      // Firmware Version string
-static const uint8_t selfNodeID = bps_nodeID;			// The nodeID of this node
+static const uint8_t selfNodeID = ads_nodeID;			// The nodeID of this node
 extern uint32_t selfStatusWord;	// Initialize
 #define NODE_CONFIGURED
 
 //RTOS Task frequency settings:
 #define RT_Interval		50
-#define SMT_Interval	1000
 #define TMT_Interval	500
 #define RT_Broadcast	20			//Multiplier of RT_Interval
 
@@ -58,13 +57,6 @@ extern uint32_t selfStatusWord;	// Initialize
 #define PSB_UA			-40000000	//uA
 #define PSB_OV			139200000	//uV
 #define PSB_UV			 88000000	//uV
-
-//LTC6801 Settings:
-// #define vovTo100uV(x) ((x+1)*16)
-#define LTC_TOTAL_IC    3  	// Number of LTC boards in the stack
-#define VUV             (1718U)	// LTC Undervoltage set point 2.7504V
-#define VOV             (2718U)	// LTC Overvoltage set point 4.3504V
-static const uint16_t LTC_CELL_EN[] = {0x3ff, 0x7ff, 0x7ff};
 
 //Thermistor settings:
 #define TEMP_CHANNELS		32
