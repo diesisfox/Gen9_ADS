@@ -162,7 +162,7 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 //#define DISABLE_RT
-//#define DISABLE_TMT
+#define DISABLE_TMT
 //#define DISABLE_CAN
 	#define DISABLE_SERIAL_OUT
 	selfStatusWord = INIT;
@@ -696,7 +696,7 @@ void EM_Init(){
 	}
 
 	// Amplify current sense channels to improve dynamic resolution
-	hmcp1.channel[1].PGA = PGA_4;
+	hmcp1.channel[1].PGA = PGA_2;
 	hmcp1.channel[3].PGA = PGA_4;
 	hmcp1.channel[5].PGA = PGA_4;
 
@@ -825,16 +825,16 @@ void doRT(void const * argument)
 			bxCan_sendFrame(&newFrame);
 
 			newFrame.id = pptBPwr;
-			temp = psb0ch2Map(__REV(hmcp1.registers[2]));
+			temp = psb0ch2Map((hmcp1.registers[2]));
 			*(int32_t*)(&(newFrame.Data[0])) = __REV(temp);
-			temp= psb0ch3Map(__REV(hmcp1.registers[3]));
+			temp= psb0ch3Map((hmcp1.registers[3]));
 			*(int32_t*)(&(newFrame.Data[4])) = __REV(temp);
 			bxCan_sendFrame(&newFrame);
 
 			newFrame.id = pptCPwr;
-			temp = psb0ch4Map(__REV(hmcp1.registers[4]));
+			temp = psb0ch4Map((hmcp1.registers[4]));
 			*(int32_t*)(&(newFrame.Data[0])) = __REV(temp);
-			temp= psb0ch5Map(__REV(hmcp1.registers[5]));
+			temp= psb0ch5Map((hmcp1.registers[5]));
 			*(int32_t*)(&(newFrame.Data[4])) = __REV(temp);
 			bxCan_sendFrame(&newFrame);
 #endif
@@ -888,7 +888,7 @@ void doTMT(void const * argument)
 #endif
 				}
 #ifndef DISABLE_CAN
-				newFrame.id = tempOffset + i;
+				newFrame.id = adcTempOffset + i;
 				bxCan_sendFrame(&newFrame);
 #endif
 			}
