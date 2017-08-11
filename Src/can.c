@@ -418,7 +418,7 @@ int bxCan_sendFrame(Can_frame_t *frame){
  * Will call the interrupt CAN Tx function again
  * Ultimately try to clear the Tx Q
  */
-void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan){
+void CAN1_TxCpltCallback(CAN_HandleTypeDef* hcan){
 	bxCan_Txcb();		// Any user-defined bxCAN txCallback goes here
 	not_in_use = 1;		// Transmission is complete, bxCAN not in use
 	bxCanDoTx(1);		// Execute the transmission function again; try to clear the Tx Q
@@ -430,7 +430,7 @@ void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan){
  * Extracts frame information and enqueues into Rx Q
  * Executes user-defined callback
  */
-void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
+void CAN1_RxCpltCallback(CAN_HandleTypeDef* hcan){
 	static Can_frame_t received;
 	received.isRemote = (rxFrameBuf.RTR) ? 1 : 0;
 	received.isExt    = (rxFrameBuf.IDE) ? 1 : 0;
@@ -455,7 +455,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
  * If CAN runs into any error, will execute user defined error handler
  * Passes the CAN Error code as argument
  */
-void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan){
+void CAN1_ErrorCallback(CAN_HandleTypeDef *hcan){
     if(bxCan_Ercb){
         bxCan_Ercb(HAL_CAN_GetError(hcan));
     }

@@ -34,7 +34,7 @@
 #define MAX_CHANNEL_NUM   (6U)
 #define MAX_CHN_SET_NUM   (3U)
 #define REGS_NUM		  (11U)
-//#define REG_LEN           (3U)
+#define REG_LEN           (3U)
 #define CTRL_LEN		  (1U)
 #define CHN_GROUP_LEN     (2U) * REG_LEN
 #define MOD_GROUP_LEN     (3U) * REG_LEN

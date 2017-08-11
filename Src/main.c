@@ -54,6 +54,7 @@
 #include "../../CAN_ID.h"
 #include "nodeConf.h"
 #include "can.h"
+#include "can2.h"
 #include "serial.h"
 #include "ts_lib.h"
 #include "thermistor.h"
@@ -206,7 +207,7 @@ int main(void)
 	bxCan_begin(&hcan1, &mainCanRxQHandle, &mainCanTxQHandle);
 	bxCan_addMaskedFilterStd(p2pOffset,0xFF0,0);
 
-	bxCan2_begin(&hcan2, &can2RxQHandle, &can2TxQHandle);
+	bxCan2_begin(&hcan2, &Can2RxQHandle, &can2TxQHandle);
 	bxCan2_addMaskedFilterStd(0,0,0);
 	bxCan2_addMaskedFilterExt(0,0,0);
 
@@ -887,7 +888,7 @@ void doTMT(void const * argument)
 					microCelcius = getMicroCelcius(2*i+j);
 					resetReading(2*i+j);
 
-					if(microCelcius >= OVER_TEMPERATURE || microCelcius <= UNDER_TEMPERATURE) assert_bps_fault(tempOffset+i*2+j, microCelcius);
+//					if(microCelcius >= OVER_TEMPERATURE || microCelcius <= UNDER_TEMPERATURE) assert_bps_fault(tempOffset+i*2+j, microCelcius);
 #ifndef DISABLE_CAN
 					*(int32_t*)(&(newFrame.Data[j*4])) = __REV(microCelcius);
 #endif
@@ -960,7 +961,7 @@ void doPPTPoll(void const * argument)
 	static Can_frame_t newFrame;
 
 	for(;;){
-		xQueueReceive(can2RxQHandle, &newFrame, portMAX_DELAY);
+		xQueueReceive(Can2RxQHandle, &newFrame, portMAX_DELAY);
 		bxCan_sendFrame(&newFrame);
 	}
   /* USER CODE END doPPTPoll */
